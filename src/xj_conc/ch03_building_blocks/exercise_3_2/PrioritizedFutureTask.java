@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * This task should be comparable according to priority and insertion order.
  * Try and understand what
  */
-class PrioritizedFutureTask<T> extends FutureTask<T> implements Comparable<PrioritizedFutureTask> {
+class PrioritizedFutureTask<T> extends FutureTask<T> implements Comparable<T> {
 
     private static final AtomicInteger i = new AtomicInteger(0);
     private final Priority priority;
@@ -24,10 +24,17 @@ class PrioritizedFutureTask<T> extends FutureTask<T> implements Comparable<Prior
     }
 
     @Override
-    public int compareTo(PrioritizedFutureTask o) {
-        if (this.priority.equals(o.priority)) {
-            return this.inserted - o.inserted;
+    public int compareTo(T o) {
+
+        if (! (o instanceof PrioritizedFutureTask)) {
+            return -1;
         }
-        return this.priority.compareTo(o.priority);
+
+        PrioritizedFutureTask<T> other = (PrioritizedFutureTask<T>) o;
+
+        if (this.priority.equals(other.priority)) {
+            return this.inserted - other.inserted;
+        }
+        return this.priority.compareTo(other.priority);
     }
 }
