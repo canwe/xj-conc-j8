@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * TODO: We need to avoid the ConcurrentModification exception in Client class.
@@ -101,7 +102,7 @@ public class AlertProvider {
     // also can be ConcurrentHashMap.newKeySet() or any other thread safe collection
 
     public Collection<Alert> getAlerts() {
-        return Collections.unmodifiableCollection(new ArrayList(alerts));
+        return Collections.unmodifiableCollection(alerts);
     }
 
     private AlertProvider() {

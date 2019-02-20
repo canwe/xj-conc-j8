@@ -10,10 +10,10 @@ public class Client {
 
     public void checkAlerts() {
         Collection<Alert> alerts = alertProvider.getAlerts(); // <---I get a ConcurrentModificationException here
-        synchronized (alerts) {
-            alerts.stream().
-                filter(alert -> alert.getLevel() != AlertLevel.GREEN).
-                forEach(alert -> System.out.println("Alert level " + alert.getLevel()));
-        }
+
+        alerts.stream().
+            filter(alert -> alert.getLevel() != AlertLevel.GREEN).
+            forEach(alert -> System.out.println("Alert level " + alert.getLevel()));
+
     }
 }
