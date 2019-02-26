@@ -2,7 +2,9 @@ package xj_conc.ch04_task_execution.exercise_4_1;
 
 import xj_conc.math.*;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.*;
+import java.util.function.Supplier;
 
 /**
  * Instead of constructing a separate thread for each number, we want to rather
@@ -16,20 +18,11 @@ public class ParallelFactorizer {
 
         // Change this block of code only:
         AtomicLong next = new AtomicLong(start);
-        Thread[] threads = new Thread[numbersToCheck];
-        for (int i = 0; i < threads.length; i++) {
-            threads[i] = new Thread(() -> {
-                long number = next.getAndIncrement();
-                long[] factors = Factorizer.factor(number);
-                if (factors.length == 1) {
-                    primes.increment();
-                }
-            });
-            threads[i].start();
+        CompletableFuture[] futures = new CompletableFuture[numbersToCheck];
+        for (int i = 0; i < numbersToCheck; i++) {
+            futures[i] = CompletableFuture.supplyAsync(() -> Factorizer.isPrime(next.getAndIncrement())).thenAccept(isPrime -> {if (isPrime) primes.increment();});
         }
-        for (Thread thread : threads) {
-            thread.join();
-        }
+        CompletableFuture.allOf(futures).join();
         return primes.intValue();
     }
 }
