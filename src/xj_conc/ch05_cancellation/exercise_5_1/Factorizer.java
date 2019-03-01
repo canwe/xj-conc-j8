@@ -9,6 +9,9 @@ public class Factorizer {
     public long[] factor(long number) throws InterruptedException {
         Collection<Long> factors = new ArrayList<>();
         for (long factor = 2; factor <= number; factor++) {
+            if (Thread.interrupted()) {
+                throw new InterruptedException();
+            }
             while (number % factor == 0) {
                 factors.add(factor);
                 number /= factor;
