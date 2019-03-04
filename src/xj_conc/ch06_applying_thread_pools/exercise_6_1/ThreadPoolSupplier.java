@@ -26,7 +26,7 @@ public class ThreadPoolSupplier implements Function<String, ThreadPoolExecutor> 
                     final Thread thread = defaultFactory.newThread(r);
                     thread.setPriority(Thread.MAX_PRIORITY - 2);
                     thread.setDaemon(false);
-                    thread.setName(thread.getName() + "#desription");
+                    thread.setName(thread.getName() + "#" + description);
                     return thread;
                 }
             },
