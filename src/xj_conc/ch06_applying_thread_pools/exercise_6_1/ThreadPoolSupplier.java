@@ -14,6 +14,31 @@ import java.util.function.*;
  */
 public class ThreadPoolSupplier implements Function<String, ThreadPoolExecutor> {
     public ThreadPoolExecutor apply(String description) {
-        return (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
+        return new ThreadPoolExecutor(10, 100,
+            5L, TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>(1000),
+            new ThreadFactory() {
+
+                private final ThreadFactory defaultFactory = Executors.defaultThreadFactory();
+
+                @Override
+                public Thread newThread(Runnable r) {
+                    final Thread thread = defaultFactory.newThread(r);
+                    thread.setPriority(Thread.MAX_PRIORITY - 2);
+                    thread.setDaemon(false);
+                    thread.setName(thread.getName() + "#desription");
+                    return thread;
+                }
+            },
+            new RejectedExecutionHandler() {
+                @Override
+                public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+                    if (executor.isShutdown()) {
+                        throw new RejectedExecutionException("pool has been shut down");
+                    } else {
+                        r.run();
+                    }
+                }
+            });
     }
 }
