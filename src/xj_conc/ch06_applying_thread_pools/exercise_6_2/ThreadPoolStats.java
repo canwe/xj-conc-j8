@@ -37,46 +37,46 @@ public class ThreadPoolStats implements ThreadPoolStatsMBean {
     }
 
     public Class<? extends RejectedExecutionHandler> getRejectedExecutionHandlerType() {
-        throw new UnsupportedOperationException("TODO");
+        return getPool().getRejectedExecutionHandler().getClass();
     }
 
     public void setCorePoolSize(int corePoolSize) {
-        throw new UnsupportedOperationException("TODO");
+        getPool().setCorePoolSize(corePoolSize);
     }
 
     public int getCorePoolSize() {
-        throw new UnsupportedOperationException("TODO");
+        return getPool().getCorePoolSize();
     }
 
     public int prestartAllCoreThreads() {
-        throw new UnsupportedOperationException("TODO");
+        return getPool().prestartAllCoreThreads();
     }
 
     public long getKeepAliveTimeInMilliseconds() {
-        throw new UnsupportedOperationException("TODO");
+        return getPool().getKeepAliveTime(TimeUnit.MILLISECONDS);
     }
 
     public Class<? extends BlockingQueue> getQueueType() {
-        throw new UnsupportedOperationException("TODO");
+        return getPool().getQueue().getClass();
     }
 
     public int getPoolSize() {
-        throw new UnsupportedOperationException("TODO");
+        return getPool().getPoolSize();
     }
 
     public int getActiveCount() {
-        throw new UnsupportedOperationException("TODO");
+        return getPool().getActiveCount();
     }
 
     public int getLargestPoolSize() {
-        throw new UnsupportedOperationException("TODO");
+        return getPool().getLargestPoolSize();
     }
 
     public long getTaskCount() {
-        throw new UnsupportedOperationException("TODO");
+        return getPool().getTaskCount();
     }
 
     public long getCompletedTaskCount() {
-        throw new UnsupportedOperationException("TODO");
+        return getPool().getCompletedTaskCount();
     }
 }
