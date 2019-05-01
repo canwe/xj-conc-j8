@@ -15,7 +15,8 @@ public class PuzzleSolver {
 
     public List<Tile[]> findSolutions() {
         // TODO: instead, we will create a PuzzleSolverTask and call invoke()
-        return findSolutionsRecursive(new Tile[tiles.length]);
+        // return findSolutionsRecursive(new Tile[tiles.length]);
+        return new PuzzleSolverTask(new Tile[tiles.length]).invoke();
     }
 
     private List<Tile[]> findSolutionsRecursive(Tile[] previousTiles) {
@@ -62,8 +63,44 @@ public class PuzzleSolver {
         // TODO: invokeAllAndMerge() with a new ArrayList<>() as identity and
         // TODO: a BinaryOperator that can merge two lists together
         // TODO: Note: For this exercise, we won't use a sequential threshold
+
+        private final Tile[] previousTiles;
+
+        private PuzzleSolverTask(Tile[] previousTiles) {
+            this.previousTiles = previousTiles;
+        }
+
         protected List<Tile[]> compute() {
-            throw new UnsupportedOperationException("TODO");
+            int pos = 0;
+            for (Tile tile : previousTiles) {
+                if (tile == null) break;
+                pos++;
+            }
+            if (pos == 9) {
+                return Collections.singletonList(previousTiles);
+            }
+
+            final List<Tile[]> results = new ArrayList<>();
+            List<PuzzleSolverTask> tasks = new ArrayList<>();
+            for (Tile tile : tiles) {
+                if (!isTileAlreadyUsed(previousTiles, tile)) {
+                    for (Direction direction : Direction.values()) {
+                        Tile[] previousTileClone = previousTiles.clone();
+                        previousTileClone[pos] = tile.rotateTo(direction);
+                        if (SolutionChecker.check(previousTileClone)) {
+
+                            System.out.println("found some match: " + Arrays.toString(previousTileClone));
+                            tasks.add(new PuzzleSolverTask(previousTileClone));
+                        }
+                    }
+                }
+            }
+            invokeAllAndMerge((tileslist, merge) -> {
+                tileslist.addAll(merge);
+                return tileslist;
+            }, results, tasks);
+
+            return results;
         }
     }
 
