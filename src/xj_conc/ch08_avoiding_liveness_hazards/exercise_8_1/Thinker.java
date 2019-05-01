@@ -20,8 +20,10 @@ public class Thinker implements Callable<ThinkerStatus> {
 
     public Thinker(int id, Krasi right, Krasi left) {
         this.id = id;
-        this.left = left;
-        this.right = right;
+
+        boolean order = left.compareTo(right) > 0;
+        this.left = order ? left : right;
+        this.right = order ? right : left;
     }
 
     @Override
