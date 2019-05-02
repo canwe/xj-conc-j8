@@ -295,27 +295,7 @@ public class Intro extends JPanel {
 
 
         static FontMetrics getMetrics(Font font) {
-            startRojoArenque();
             return surf.getFontMetrics(font);
-        }
-
-        private static volatile boolean rojo1Started = false;
-
-        private static void startRojoArenque() {
-            if (!rojo1Started) {
-                rojo1Started = true;
-                new Thread("rojo1") {
-                    public void run() {
-                        while (true) {
-                            synchronized (Surface.class) {
-                                synchronized (RunWindow.class) {
-
-                                }
-                            }
-                        }
-                    }
-                }.start();
-            }
         }
 
 
@@ -385,20 +365,7 @@ public class Intro extends JPanel {
             }
         }
 
-
         public void run() {
-            new Thread("rojo3") {
-                public void run() {
-                    while (true) {
-                        synchronized (Tools.class) {
-                            synchronized (Surface.class) {
-
-                            }
-                        }
-                    }
-                }
-            }.start();
-
             Thread me = Thread.currentThread();
 
             while (thread == me && !isShowing() || getSize().width <= 0) {
@@ -549,24 +516,7 @@ public class Intro extends JPanel {
                         new Contributors(34, 200)}},
             };
 
-
-            private static volatile boolean rojo2Started = false;
-
             public Director() {
-                if (!rojo2Started) {
-                    rojo2Started = true;
-                    new Thread("rojo2") {
-                        public void run() {
-                            while (true) {
-                                synchronized (RunWindow.class) {
-                                    synchronized (Tools.class) {
-
-                                    }
-                                }
-                            }
-                        }
-                    }.start();
-                }
                 for (Object[][] partInfo : partsInfo) {
                     List<Part> parts = new Vector<Part>();
                     for (Object part : partInfo[1]) {
