@@ -54,14 +54,16 @@ public class MemoryManager extends Semaphore {
     public void gc() {
         try {
             acquire();
-            try {
-                System.gc();
-            } finally {
-                System.out.println("System.gc() called");
-                release();
-            }
-        } catch (Exception ex) {
+        } catch (InterruptedException e) {
             // ignore the InterruptedException
+            return;
+        }
+        try {
+            System.gc();
+        } finally {
+            //why System.out is null here?
+            //System.out.println("System.gc() called");
+            release();
         }
     }
 }
