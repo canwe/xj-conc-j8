@@ -61,8 +61,7 @@ public class MemoryManager extends Semaphore {
         try {
             System.gc();
         } finally {
-            //why System.out is null here?
-            //System.out.println("System.gc() called");
+            System.out.println("System.gc() called");
             release();
         }
     }

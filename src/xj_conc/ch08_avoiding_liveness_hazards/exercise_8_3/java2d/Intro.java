@@ -1699,6 +1699,6 @@ public class Intro extends JPanel {
     } // End Surface class
 
     static {
-        System.setOut(null); // we don't want output
+        // System.setOut(null); // we don't want output
     }
 } // End Intro class
