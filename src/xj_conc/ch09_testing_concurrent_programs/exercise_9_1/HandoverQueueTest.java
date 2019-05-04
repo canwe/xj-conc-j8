@@ -40,7 +40,8 @@ public class HandoverQueueTest {
      */
     @Test
     public void testBasicIsEmpty() {
-        fail("todo - please implement");
+        HandoverQueue<Object> handoverQueue = new HandoverQueue();
+        Assert.assertTrue(handoverQueue.isEmpty());
     }
 
     /**
@@ -49,7 +50,14 @@ public class HandoverQueueTest {
      */
     @Test
     public void testOfferAndPoll() {
-        fail("todo - please implement");
+        HandoverQueue<Object> handoverQueue = new HandoverQueue();
+        List<Object> list = Arrays.asList(new Object(), new Object(), new Object());
+        for (Object o : list) {
+            Assert.assertTrue(handoverQueue.offer(o));
+        }
+        for (Object o : list) {
+            Assert.assertSame(handoverQueue.poll(), o);
+        }
     }
 
     /**
@@ -58,7 +66,12 @@ public class HandoverQueueTest {
      */
     @Test
     public void testPeek() {
-        fail("todo - please implement");
+        HandoverQueue<Object> handoverQueue = new HandoverQueue();
+        Object o = new Object();
+        handoverQueue.offer(o);
+        Object peek = handoverQueue.peek();
+        Assert.assertSame(o, peek);
+        Assert.assertFalse(handoverQueue.isEmpty());
     }
 
     // multi-threaded bulk random update correctness tests
@@ -71,17 +84,19 @@ public class HandoverQueueTest {
         // and it should pass with a well-known concurrent queue
         // Queue<Integer> q = new LinkedBlockingQueue<>();
         HandoverQueue<Integer> q = new HandoverQueue<>();
+        Random rand = new Random();
         long timeToRun = runConcurrently(4, () -> {
             for (int i = 0; i < 1_000_000; i++) {
-                // q.offer(somevalue); // check the element was added
-                // q.size(); // check the result is within range
-                // q.peek(); // check the value is what you would expect
-                // q.poll(); // check the value is what you would expect
+                Integer someValue = rand.nextInt(1_000_000_000);
+                Assert.assertTrue(q.offer(someValue)); // check the element was added
+                Assert.assertTrue(q.size() > 0); // check the result is within range
+                Assert.assertNotNull(q.peek()); // check the value is what you would expect
+                Assert.assertNotNull(q.poll()); // check the value is what you would expect
             }
         });
         System.out.println("timeToRun = " + timeToRun);
         // check that the queue is now empty
-        fail("todo - please implement");
+        Assert.assertTrue(q.isEmpty());
     }
 
     /**
