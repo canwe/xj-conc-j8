@@ -44,14 +44,15 @@ public class LinkedTransferQueueTest {
         Future<?> forEachFuture = pool.submit(() -> {
             for (int i = 0; i < REPEATS; i++) {
                 // convert the collection to a stream and print each element
-                throw new UnsupportedOperationException("TODO");
+                alerts.stream().forEach(System.out::println);
             }
         });
         Future<?> addRemoveFuture = pool.submit(() -> {
             String alert = "fly loose in the server room";
             for (int i = 0; i < REPEATS; i++) {
                 // Add and remove again the alert
-                throw new UnsupportedOperationException("TODO");
+                alerts.add(alert);
+                alerts.remove(alert);
             }
         });
         pool.shutdown();
