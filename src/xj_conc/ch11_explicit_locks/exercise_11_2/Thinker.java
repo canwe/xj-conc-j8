@@ -42,22 +42,28 @@ public class Thinker implements Callable<ThinkerStatus> {
             drink();
             think();
         }
-        return drinks == 1000 ? ThinkerStatus.HAPPY_THINKER :
-            ThinkerStatus.UNHAPPY_THINKER;
+        return drinks == 1000 ? ThinkerStatus.HAPPY_THINKER : ThinkerStatus.UNHAPPY_THINKER;
     }
 
     @SuppressWarnings("boxing")
     public void drink() {
-        right.lock();
-        try {
-            left.lock();
-            try {
-                drinking();
-            } finally {
-                left.unlock();
+        while (true) {
+            if (!right.tryLock()) {
+                continue;
             }
-        } finally {
-            right.unlock();
+            try {
+                if (!left.tryLock()) {
+                    continue;
+                }
+                try {
+                    drinking();
+                    return;
+                } finally {
+                    left.unlock();
+                }
+            } finally {
+                right.unlock();
+            }
         }
     }
 
