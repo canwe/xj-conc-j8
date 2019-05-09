@@ -3,47 +3,90 @@ package xj_conc.ch11_explicit_locks.exercise_11_3;
 import net.jcip.annotations.*;
 
 import java.util.*;
+import java.util.concurrent.locks.StampedLock;
 
+/*
+synchronized on monitor
+Best values:
+	size()        19,301,017
+	get()         15,027,752
+	add/remove()  26,467,009
+Worst values:
+	size()        12,231,428
+	get()         5,613,637
+	add/remove()  22,254,451
+
+stamped lock
+Best values:
+	size()        787,771,745
+	get()         4,691,880
+	add/remove()  9,877,255
+Worst values:
+	size()        433,427,292
+	get()         2,357,492
+	add/remove()  6,118,787
+ */
 @ThreadSafe
 public class IntList {
     private final Object monitor = new Object();
-    @GuardedBy("monitor")
+
+    //@GuardedBy("monitor")
     private int[] arr = new int[10];
-    @GuardedBy("monitor")
+
+    //@GuardedBy("monitor")
     private int size = 0;
 
+    private final StampedLock sl = new StampedLock();
+
     public int size() {
-        synchronized (monitor) {
-            return size;
-        }
+        sl.tryOptimisticRead();
+        return size;
     }
 
     public int get(int index) {
-        synchronized (monitor) {
+        long stamp = sl.readLock();
+        try {
             rangeCheck(index, size);
             return arr[index];
+        } finally {
+            sl.unlockRead(stamp);
         }
     }
 
     public boolean add(int e) {
-        synchronized (monitor) {
+        long stamp = sl.writeLock();
+        try {
             if (size + 1 > arr.length)
                 arr = Arrays.copyOf(arr, size + 10);
 
             arr[size++] = e;
             return true;
+        } finally {
+            sl.unlockWrite(stamp);
         }
     }
 
     public void trimToSize() {
-        synchronized (monitor) {
+        long stamp = sl.tryOptimisticRead();
+        int currentSize = size;
+        int[] currentArr = arr;
+        if (sl.validate(stamp)) {
+            // fast optimistic read to accelerate trimToSize() when
+            // there is no work to do
+            if (currentSize == currentArr.length) return;
+        }
+        stamp = sl.writeLock();
+        try {
             if (size < arr.length)
                 arr = Arrays.copyOf(arr, size);
+        } finally {
+            sl.unlockWrite(stamp);
         }
     }
 
     public int remove(int index) {
-        synchronized (monitor) {
+        long stamp = sl.writeLock();
+        try {
             rangeCheck(index, size);
 
             int oldValue = arr[index];
@@ -55,6 +98,8 @@ public class IntList {
             arr[--size] = 0;
 
             return oldValue;
+        } finally {
+            sl.unlock(stamp);
         }
     }
 

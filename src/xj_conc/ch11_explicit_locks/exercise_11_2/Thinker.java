@@ -3,6 +3,7 @@ package xj_conc.ch11_explicit_locks.exercise_11_2;
 import xj_conc.ch08_avoiding_liveness_hazards.exercise_8_1.*;
 
 import java.util.concurrent.*;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * Our philosopher always first locks left, then right.  If all of the thinkers
@@ -48,11 +49,10 @@ public class Thinker implements Callable<ThinkerStatus> {
     @SuppressWarnings("boxing")
     public void drink() {
         while (true) {
-            if (!right.tryLock()) {
-                continue;
-            }
+            right.lock();
             try {
                 if (!left.tryLock()) {
+                    LockSupport.parkNanos(System.nanoTime() & 0xFFFF);
                     continue;
                 }
                 try {
