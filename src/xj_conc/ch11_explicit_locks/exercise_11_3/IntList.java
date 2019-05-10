@@ -18,13 +18,13 @@ Worst values:
 
 stamped lock
 Best values:
-	size()        787,771,745
-	get()         4,691,880
-	add/remove()  9,877,255
+	size()        63,349,722
+	get()         5,164,578
+	add/remove()  15,867,251
 Worst values:
-	size()        433,427,292
-	get()         2,357,492
-	add/remove()  6,118,787
+	size()        39,158,698
+	get()         3,541,922
+	add/remove()  10,643,719
  */
 @ThreadSafe
 public class IntList {
@@ -39,7 +39,15 @@ public class IntList {
     private final StampedLock sl = new StampedLock();
 
     public int size() {
-        sl.tryOptimisticRead();
+        long stamp = sl.tryOptimisticRead();
+        if (!sl.validate(stamp)) {
+            stamp = sl.readLock();
+            try {
+                return size;
+            } finally {
+                sl.unlockRead(stamp);
+            }
+        }
         return size;
     }
 
