@@ -21,6 +21,17 @@ public class FailFastCollection<E> implements Collection<E> {
         // full GC (System.gc()) and then check again for cleared weak
         // references.  If we still have uncleared weak references to
         // iterators, throw a ConcurrentModificationException
+        if (hasLiveIterator()) {
+            System.gc();
+            if (hasLiveIterator()) {
+                throw new ConcurrentModificationException("already busy iterating");
+            }
+        }
+    }
+
+    private boolean hasLiveIterator() {
+        iterators.removeIf(wr -> wr.get() == null);
+        return iterators.stream().anyMatch(wr -> wr.get() != null);
     }
 
     // Non-modifying safe operations
