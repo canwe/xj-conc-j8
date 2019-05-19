@@ -15,17 +15,16 @@ public class FastValidatorImpl implements Validator {
         * an integer greater than 10
         * an integer between 2 and 100000 inclusive
         * That the first digit is 3.
-        */
-        try {
-            // fails if not a number
-            Integer theInteger = new Integer(testInteger);
-            return (!theInteger.toString().equals("")) && // not empty
-                (theInteger > 10) && // greater than ten
-                ((theInteger >= 2) && (theInteger <= 100000)) && // 2>=X<=100000
-                // first digit is 3
-                (theInteger.toString().charAt(0) == '3');
-        } catch (NumberFormatException err) {
-            return false;
-        }
+         */
+        boolean s_check = null != testInteger; // not empty
+        int length = s_check ? testInteger.length() : 0;
+        s_check = s_check && length > 1 && length < 6; // greater than ten less than 100000
+        s_check = s_check && testInteger.charAt(0) == '3'; // first digit is 3
+        if (s_check)
+            for (int i = 1; i < length; i++) {
+                char c = testInteger.charAt(i);
+                s_check = s_check && c >= '0' && c <= '9';
+            }
+        return s_check;
     }
 }
