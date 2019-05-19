@@ -24,6 +24,7 @@ public class FastValidatorImpl implements Validator {
             for (int i = 1; i < length; i++) {
                 char c = testInteger.charAt(i);
                 s_check = s_check && c >= '0' && c <= '9';
+                if (!s_check) break;
             }
         return s_check;
     }
