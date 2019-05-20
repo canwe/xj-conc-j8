@@ -58,16 +58,10 @@ public class ValidatorTestHarness {
 
         int truecount = 0;
         for (int i = 0; i < REPEATS; i++) {
-            try (
-                FileInputStream fis = new FileInputStream(dataset);
-                ObjectInputStream in = new ObjectInputStream(fis)
-            ) {
-                truecount = 0;
-                String s;
-                while ((s = (String) in.readObject()) != null) {
-                    if (val.checkInteger(s))
-                        truecount++;
-                }
+            List<String> strings = getData(dataset);
+            for (String s : strings) {
+                if (val.checkInteger(s))
+                    truecount++;
             }
         }
 
@@ -80,5 +74,24 @@ public class ValidatorTestHarness {
             oldTime.merge(dataset, mbm.getUserTime(), Long::min);
             return oldTime;
         });
+    }
+
+    private final static Map<String, List<String>> cache = new HashMap<>();
+
+    private static List<String> getData(String dataset) {
+        return cache.computeIfAbsent(dataset, ValidatorTestHarness::read);
+    }
+
+    private static List<String> read(String dataset) {
+        List<String> strings = new ArrayList<>();
+        try (ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(dataset)))) {
+            String s;
+            while ((s = (String) in.readObject()) != null) {
+                strings.add(s);
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            throw new IllegalStateException(e);
+        }
+        return strings;
     }
 }
