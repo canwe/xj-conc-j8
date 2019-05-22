@@ -5,16 +5,18 @@ import net.jcip.annotations.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 @ThreadSafe
 public class FutureResultIterable<V> implements Iterable<Future<V>> {
+
     private final ExecutorService delegate;
     private final CompletionService<V> service;
     private final ExecutorService resultFetcher = Executors.newSingleThreadExecutor();
-
     private final AtomicInteger numberOfSubmittedTasks = new AtomicInteger(0);
-    @GuardedBy("completedJobs")
-    private final List<Future<V>> completedJobs = new ArrayList<>();
+    @GuardedBy("lock") private final List<Future<V>> completedJobs = new ArrayList<>();
 
     /**
      * DO NOT CHANGE.
@@ -34,15 +36,39 @@ public class FutureResultIterable<V> implements Iterable<Future<V>> {
         }
     }
 
+    private final Lock lock = new ReentrantLock();
+    private final Condition hasJob = lock.newCondition();
+
     private void startResultFetcherThread() {
-        resultFetcher.submit(() -> {
-            /* TODO: implement the following pseudocode in Java
-            while(there_are_more_jobs_to_fetch || we_have_not_been_interrupted) {
-              take_the_next_job_from_the_completion_service
-              add_it_to_the_completed_jobs_list_with_correct_synchronization
-              signal_or_notify_that_we_have_added_it
+        resultFetcher.submit(new Runnable() {
+
+            private boolean stop = false;
+
+            private boolean hasMoreTasks() {
+                lock.lock();
+                try {
+                    return completedJobs.size() < numberOfSubmittedTasks.get();
+                } finally {
+                    lock.unlock();
+                }
             }
-            */
+            @Override
+            public void run() {
+                while (!stop || hasMoreTasks()) {
+                    try {
+                        Future<V> job = service.take();
+                        lock.lock();
+                        try {
+                            completedJobs.add(job);
+                            hasJob.signalAll();
+                        } finally {
+                            lock.unlock();
+                        }
+                    } catch (InterruptedException e) {
+                        stop = true;
+                    }
+                }
+            }
         });
     }
 
@@ -51,22 +77,21 @@ public class FutureResultIterable<V> implements Iterable<Future<V>> {
             private int pos;
 
             public boolean hasNext() {
-                // TODO: compare our current position to number of submitted tasks
-                throw new UnsupportedOperationException("todo");
+                return Integer.compare(pos, numberOfSubmittedTasks.get()) == -1;
             }
 
             public Future<V> next() {
-                /* TODO: implement the following pseudocode in Java
-                    acquire lock;
-                    // BLOCK-UNTIL: pos < completedJobs.size()
-                    while(our_pre_condition_is_false) {
-                        wait_until_condition_might_change
-                        if_interrupted_save_for_later_and_self_interrupt_before_return
+                if (!hasNext()) throw new NoSuchElementException();
+                lock.lock();
+                // BLOCK-UNTIL: pos < completedJobs.size()
+                try {
+                    while (!(pos < completedJobs.size())) {
+                        hasJob.awaitUninterruptibly();
                     }
-                    return_the_next_future_from_the_completed_jobs_and_increment_pos
-                    release lock;
-                */
-                throw new UnsupportedOperationException("todo");
+                    return completedJobs.get(pos++);
+                } finally {
+                    lock.unlock();
+                }
             }
         };
     }
