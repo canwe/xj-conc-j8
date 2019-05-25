@@ -1,36 +1,49 @@
 package xj_conc.ch13_atomic_variables_and_nonblocking_synchronization.exercise_13_1;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * TODO: Change BankAccount to use atomics, rather than explicit locking.
  */
 public class BankAccount {
     // INVARIANT: balance must never be negative!!!
-    private int balance;
+    private AtomicInteger balance = new AtomicInteger();
 
     public BankAccount(int balance) {
         if (balance < 0) throw new IllegalStateException();
-        this.balance = balance;
+        this.balance.set(balance);
     }
 
-    public synchronized void deposit(int amount) {
-        if (balance + amount < 0) throw new IllegalStateException();
-        balance += amount;
+    public boolean deposit(int amount) {
+        int current = balance.get();
+        if (current + amount < 0) throw new IllegalStateException();
+        return doDeposit(amount);
     }
 
-    public void withdraw(int amount) {
-        deposit(-amount);
+    private boolean doDeposit(int amount) {
+        int current = balance.get();
+        while (!balance.compareAndSet(current, current + amount)) {
+            current = balance.get();
+            if (current + amount < 0) return false;
+        }
+        return true;
     }
 
-    public synchronized int getBalance() {
-        return balance;
+    public boolean withdraw(int amount) {
+        return deposit(-amount);
     }
 
-    public synchronized boolean transferTo(BankAccount other, int amount) {
+    public int getBalance() {
+        return balance.get();
+    }
+
+    public boolean transferTo(BankAccount other, int amount) {
         if (amount < 0) throw new IllegalArgumentException();
-        if (balance < amount) {
+        int current = balance.get();
+        if (current < amount) {
             return false;
         }
-        withdraw(amount);
+        if (!doDeposit(-amount)) return false;
         other.deposit(amount);
         return true;
     }

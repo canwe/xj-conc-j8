@@ -71,7 +71,8 @@ public class BankAccountTest {
             depositGreece.get();
             futureGreece.get();
         } catch (ExecutionException e) {
-            fail(e.toString());
+            e.printStackTrace();
+            fail();
         }
     }
 
